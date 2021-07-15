@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 import cv2 as cv
 
+import pyautogui as pag
 
 
 
@@ -31,17 +32,7 @@ height = img_rgb.shape[1]
 rwidth = width / countw
 rheigth = height / counth
 img_gray = cv.cvtColor(img_rgb,cv.COLOR_BGR2GRAY)
-template1 = cv.imread('temple/empty.PNG')
-template = cv.cvtColor(template1, cv.COLOR_BGR2GRAY)
-res = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
-threshold = 0.9
-loc = np.where(res >= threshold)
-minefield = np.empty((9,9), dtype="int")
-minefield.fill(0)
-for pt in zip(*loc[::-1]):
-    y =math.trunc (np.absolute( pt[0])  / rwidth)
-    x = math.trunc(np.absolute(pt[1]) / rheigth)
-    minefield[x][y] = 0
+
 
 template1 = cv.imread('temple/1.PNG')
 template = cv.cvtColor(template1, cv.COLOR_BGR2GRAY)
@@ -111,22 +102,25 @@ imageMainGray = cv.cvtColor(imageMain,cv.COLOR_BGR2GRAY)
 ret2, thresh2 = cv.threshold(imageMainGray, 101,255,0)
 contoursMain, hierarchy2 = cv.findContours(thresh2, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 
+scrW,scrH = pag.size()
+for i in range(9):
+    for y in range(9):
+        if minefield[i,y] == 1:
+            pag.moveTo(790+(y * 60) ,470+(i * 60) , 0.001)
+
+for i in range(9):
+    for y in range(9):
+        if minefield[i,y] == 2:
+            pag.moveTo(790+(y * 60) ,470+(i * 60) , 0.3)
+
+
+for i in range(9):
+    for y in range(9):
+        if minefield[i,y] == 3:
+            pag.moveTo(790+(y * 60) ,470+(i * 60) , 0.3)
 
 
 
-for cnt in contoursMain:
-    if cnt.size == dict['1.PNG'][0]:
-        cv.drawContours(imageMain, cnt, -1, (random.randint(0,255), random.randint(0,255),random.randint(0,255)), 3)
-
-    elif cnt.size == dict['2.PNG'][0]:
-        cv.drawContours(imageMain, cnt, -1, (random.randint(0,255), random.randint(0,255), random.randint(0,255)), 3)
-    elif cnt.size == dict['empty.PNG'][0]:
-        cv.drawContours(imageMain, cnt, -1, (random.randint(0,255), random.randint(0,255), random.randint(0,255)), 3)
-        x = 0
-        y = 0
-        for i in range(0, len(cnt)):
-            x, y, w, h = cv2.boundingRect(cnt[i])
-        cv.circle(imageMain, (x, y), 10, (0, 0, 255), 5)
 
 cv2.imshow('test',imageMain)
 cv2.waitKey(0)
