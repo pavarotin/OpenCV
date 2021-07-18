@@ -1,20 +1,27 @@
 import math
 import os
 import random
-
+import  time
+import win32api, win32con
 import cv2
 import numpy as np
 import cv2 as cv
 
 import pyautogui as pag
 def leftClickOn(i, y):
+    win32api.SetCursorPos((644 + (y * 60), 287 + (i * 60),))
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, x, y, 0, 0)
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, x, y, 0, 0)
+    time.sleep(0.001)
+   # pag.click(button='left')
 
-    pag.click(790 + (y * 60), 470 + (i * 60),button='left')
-    print("LeftCLick")
 
 def rightClickOn(i, y):
     #pag.moveTo(, speedMouse)
-    pag.click( 790 + (y * 60), 470 + (i * 60), button='Right')
+    win32api.SetCursorPos((644 + (y * 60), 287 + (i * 60),))
+    win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN, x, y, 0, 0)
+    win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP, x, y, 0, 0)
+    #pag.click(  button='Right')
 
 class Point:
     def __init__(self, x_init, y_init):
@@ -36,12 +43,12 @@ class Point:
         if not isinstance(other, type(self)): return NotImplemented
         return self.x == other.x and self.y == other.y
 def setFlag():
-    print('gus')
+
     countNeigb = 0
     coordNeigb = set([])
     for i in range(9):
         for y in range(9):
-            if minefield[i, y] in range(1, 4):
+            if minefield[i, y] in range(1, 6):
                 countNeigb = 0
                 coordNeigb.clear()
                 if  i!=0 and minefield[i - 1, y]  == 9 or i!=0 and minefield[i - 1, y] == -1:
@@ -57,7 +64,7 @@ def setFlag():
                 if y != 8 and minefield[i, y + 1] == 9 or y != 8 and  minefield[i, y + 1] ==-1:
                     countNeigb += 1
                     coordNeigb.add(Point(i, y+1))
-                if y != 8 and i !=8and minefield[i - 1, y - 1] == 9 or minefield[i - 1, y - 1] ==  -1:
+                if y != 0 and i !=0 and minefield[i - 1, y - 1] == 9 or minefield[i - 1, y - 1] ==  -1:
                     countNeigb += 1
                     coordNeigb.add(Point(i-1, y-1))
                 if i!=0 and y != 8 and minefield[i - 1, y + 1] == 9 or i!=0 and y != 8 and minefield[i - 1, y + 1] == -1:
@@ -76,19 +83,38 @@ def setFlag():
 
                     if minefield[c.x,c.y] != -1:
                         rightClickOn(c.x, c.y)
-                        print({minefield[c.y, c.x]}, " click x:y", {c.x}, ":", {c.y})
+
                         minefield[c.x, c.y] = -1
 
-    print(Point(5,0) in coordNeigb)
 
+def countNotPush(i,y):
+        countNeigb = 0
+        if  i != 0 and minefield[i - 1, y] == 9:
+            countNeigb += 1
+        if  y != 0 and minefield[i, y - 1] == 9:
+            countNeigb += 1
+        if  i != 8 and minefield[i + 1, y] == 9:
+            countNeigb += 1
+        if  y != 8 and minefield[i, y + 1] == 9:
+            countNeigb += 1
+        if y != 0 and i != 0 and minefield[i - 1, y - 1] == 9 :
+            countNeigb += 1
+        if i != 0 and y != 8 and minefield[i - 1, y + 1] == 9:
+            countNeigb += 1
+        if i != 8 and y != 8 and minefield[i + 1, y + 1] == 9:
+            countNeigb += 1
+        if i != 8 and y != 0 and minefield[i + 1, y - 1] == 9:
+            countNeigb += 1
+
+        return  countNeigb
 
 def deFLag():
-    print('gus')
+
     countNeigb = 0
     coordNeigb = set([])
     for i in range(9):
         for y in range(9):
-            if minefield[i, y] in range(1, 4):
+            if minefield[i, y] in range(1, 6):
                 countNeigb = 0
                 coordNeigb.clear()
                 if  i != 0 and minefield[i - 1, y] == -1:
@@ -104,7 +130,7 @@ def deFLag():
                 if  y != 8 and minefield[i, y + 1] == -1:
                     countNeigb += 1
                     coordNeigb.add(Point(i, y + 1))
-                if y != 8 and i != 8 and minefield[i - 1, y - 1] == -1 :
+                if y != 0 and i != 0 and minefield[i - 1, y - 1] == -1 :
                     countNeigb += 1
                     coordNeigb.add(Point(i - 1, y - 1))
                 if i != 0 and y != 8 and minefield[i - 1, y + 1] == -1:
@@ -120,34 +146,36 @@ def deFLag():
             #     if coordNeigb.count(isa) > 1:
             #         coordNeigb.remove(isa)
 
-            if minefield[i,y] in range(1,4) and  minefield[i, y] == countNeigb:
+            if countNotPush(i,y) != 0:
+                if minefield[i,y] in range(1,6) and  minefield[i, y] == countNeigb :
+                    leftClickOn(i , y)
 
 
 
                # print({minefield[c.y, c.x]}, " Leftclick x:y", {c.x}, ":", {c.y})
-                if i != 0 and Point( i - 1, y) not in coordNeigb and minefield[i-1,y] ==9:
-                    leftClickOn(i-1,y)
+               #  if i != 0 and Point( i - 1, y) not in coordNeigb and minefield[i-1,y] ==9:
+               #      leftClickOn(i-1,y)
+               #
+               #  if y != 0 and minefield[i, y - 1] not in coordNeigb and minefield[i,y-1] ==9:
+               #      leftClickOn(i,y-1)
+               #  if i != 8 and minefield[i + 1, y] not in coordNeigb and minefield[i+1,y] ==9:
+               #      leftClickOn(i+1,y)
+               #  if y != 8 and minefield[i, y + 1] not in coordNeigb and minefield[i,y+1] ==9:
+               #      leftClickOn(i , y+1)
+               #  if y != 8 and i != 8 and minefield[i - 1, y - 1] not in coordNeigb and minefield[i-1,y-1] ==9:
+               #      leftClickOn(i-1,y-1)
+               #  if i != 0 and y != 8 and minefield[i - 1, y + 1] not in coordNeigb and minefield[i-1,y+1] ==9:
+               #      leftClickOn(i-1,y+1)
+               #  if i != 8 and y != 8 and minefield[i + 1, y + 1] not in coordNeigb and minefield[i+1,y+1] ==9:
+               #      leftClickOn(i+1,y+1)
+               #  if i != 8 and y != 0 and minefield[i + 1, y - 1] not in coordNeigb and minefield[i+1,y-1] ==9:
+               #      leftClickOn(i+1,y-1)
 
-                if y != 0 and minefield[i, y - 1] not in coordNeigb and minefield[i,y-1] ==9:
-                    leftClickOn(i,y-1)
-                if i != 8 and minefield[i + 1, y] not in coordNeigb and minefield[i+1,y] ==9:
-                    leftClickOn(i+1,y)
-                if y != 8 and minefield[i, y + 1] not in coordNeigb and minefield[i,y+1] ==9:
-                    leftClickOn(i , y+1)
-                if y != 8 and i != 8 and minefield[i - 1, y - 1] not in coordNeigb and minefield[i-1,y-1] ==9:
-                    leftClickOn(i-1,y-1)
-                if i != 0 and y != 8 and minefield[i - 1, y + 1] not in coordNeigb and minefield[i-1,y+1] ==9:
-                    leftClickOn(i-1,y+1)
-                if i != 8 and y != 8 and minefield[i + 1, y + 1] not in coordNeigb and minefield[i+1,y+1] ==9:
-                    leftClickOn(i+1,y+1)
-                if i != 8 and y != 0 and minefield[i + 1, y - 1] not in coordNeigb and minefield[i+1,y-1] ==9:
-                    leftClickOn(i+1,y-1)
 
-    print(Point(5, 0) in coordNeigb)
 while True:
-    cv2.imshow('test', cv.imread('test2.PNG'))
-    cv2.waitKey(0)
-    pag.screenshot('gus.png',region=(742, 436, 570, 570))
+    # cv2.imshow('test', cv.imread('test2.PNG'))
+    # cv2.waitKey(0)
+    pag.screenshot('gus.png',region=(608, 248, 570, 570))
     directory = 'temple/'
     dict = {}
     # for image in os.listdir(directory):
@@ -163,7 +191,6 @@ while True:
 
     countw = 10
     counth = 10
-
     img_rgb = cv.imread('gus.PNG')
     width = img_rgb.shape[0]
     height = img_rgb.shape[1]
@@ -192,7 +219,7 @@ while True:
         y = math.trunc(np.absolute(pt[0]) / rwidth)
         x = math.trunc(np.absolute(pt[1]) / rheigth)
         minefield[x][y] = 2
-
+    #leftClickOn(0,0)
     template1 = cv.imread('temple/3.PNG')
     template = cv.cvtColor(template1, cv.COLOR_BGR2GRAY)
     res = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
@@ -235,30 +262,47 @@ while True:
         y = math.trunc(np.absolute(pt[0]) / rwidth)
         x = math.trunc(np.absolute(pt[1]) / rheigth)
         minefield[x][y] = -1
+    #pag.screenshot('win.png', region=(827, 104, 120, 120))
+    # template1 = cv.imread('temple/die.PNG')
+    # template = cv.cvtColor(template1, cv.COLOR_BGR2GRAY)
+    # img_gray = cv.cvtColor(cv.imread('win.PNG'), cv.COLOR_BGR2GRAY)
+    # res = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
+    # threshold = 0.9
+    # if len(loc[0]) > 1 and loc[0][0] is not None:
+    #     pag.click((827,104), button='Left')
+    #     continue
+    #
+    # pag.screenshot('win.png', region=(827, 104, 120, 120))
+    # template1 = cv.imread('temple/finish.PNG')
+    # template = cv.cvtColor(template1, cv.COLOR_BGR2GRAY)
+    # img_gray = cv.cvtColor(cv.imread('win.PNG'), cv.COLOR_BGR2GRAY)
+    # res = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
+    # threshold = 0.9
+    # if len(loc[0]) > 1 and loc[0][0] is not None:
+    #     pag.click((827, 104), button='Left')
+    #     continue
 
-    print(minefield)
-    cv.imshow('test', img_rgb)
-    cv.waitKey(0)
-    imageMain = cv2.imread('test.png')
-    imageMainGray = cv.cvtColor(imageMain, cv.COLOR_BGR2GRAY)
-    ret2, thresh2 = cv.threshold(imageMainGray, 101, 255, 0)
-    contoursMain, hierarchy2 = cv.findContours(thresh2, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+
+    # cv.imshow('test', img_rgb)
+    # cv.waitKey(0)
+   # imageMain = cv2.imread('test.png')
 
     scrW, scrH = pag.size()
 
     speedMouse = 0.1
 
 
-
+    if(np.sum(minefield) > 728):
+        continue
 
 
 
 
     setFlag()
-    print(minefield)
+
     deFLag()
     #markFlag()
-    cv2.imshow('test', imageMain)
-    cv2.waitKey(0)
+    # cv2.imshow('test', imageMain)
+    # cv2.waitKey(0)
 
 
